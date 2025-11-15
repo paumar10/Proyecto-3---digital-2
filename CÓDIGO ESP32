@@ -1,0 +1,77 @@
+#include <Arduino.h>
+#include <Wire.h>
+
+//Dirección del sensor I2C
+#define LM75_ADDR 0x48
+
+//Lectura y devolución de valores del sensor
+float leerLM75() {
+  //Se le indica al LM75 lo que se quiere leer
+    Wire.beginTransmission(LM75_ADDR);
+    Wire.write(0x00);
+    Wire.endTransmission(false);
+
+    //Se leen 2 bytes
+    Wire.requestFrom(LM75_ADDR, 2);
+
+    //Verificar que hayan llegado los dos bytes
+    if (Wire.available() < 2) {
+        return -1000; 
+    }
+    
+    //Lectura de los dos bytes 
+    uint8_t b1 = Wire.read();
+    uint8_t b2 = Wire.read();
+
+    //Conversión de la lectura de 2 bytes 
+    int16_t raw = b1; //lectura del byte más alto
+    raw = raw * 256;  //acomodar lectura, que llega en 8 bits
+    raw = raw + b2;  //agregar el otro byte
+    raw = raw / 128;  //acomodar la lectura, se usaron 2 bits antes y se usan 9 para la temperatura
+
+    //Conversión a °C
+    float tempC = raw * 0.5;//Cada bit tiene resolución de 0.5
+    return tempC;
+}
+
+void setup() {
+    Serial.begin(115200);
+    //Comunicación con STM32
+    Serial2.begin(115200, SERIAL_8N1, 16, 17);
+
+    Wire.begin(21, 22); 
+
+    Serial.println("LM75 encontrado en 0x48");
+    Serial.println("Leyendo temperatura...\n");
+}
+
+void loop() {
+  /*float temp = leerLM75();
+
+  if (temp > -500) {
+    Serial.print("Temperatura: ");
+    Serial.print(temp, 2);
+    Serial.println(" °C");
+  } 
+  else {
+    Serial.println("Error leyendo LM75");
+  }
+
+  delay(500);*/
+
+  if(Serial2.available()){
+    char lectura = Serial2.read();
+    Serial.print("Recibí: ");
+    Serial.println(lectura); 
+    if(lectura=='R'){
+      float temp2 = leerLM75();
+      //Conversión de float a bytes
+      uint8_t*dato=(uint8_t*)&temp2;
+      Serial2.write(dato,sizeof(temp2));
+      Serial.print("Temperatura: ");
+      Serial.print(temp2, 2);
+      Serial.println(" °C");
+    }
+  }
+  delay(300);
+}
