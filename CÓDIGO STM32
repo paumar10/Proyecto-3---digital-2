@@ -47,8 +47,8 @@ uint32_t ultimo_bot1=0;
 uint32_t delay_bot=50;
 
 // Posición de la TFT para mostrar la temperatura
-#define TEMP_X_POS 100 // Ajustado para centrar el valor
-#define TEMP_Y_POS 50  // Posición para el valor grande
+//#define TEMP_X_POS 100 // Ajustado para centrar el valor
+//#define TEMP_Y_POS 50  // Posición para el valor grande
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -59,19 +59,19 @@ uint32_t delay_bot=50;
 /* Private variables ---------------------------------------------------------*/
 SPI_HandleTypeDef hspi1;
 
-UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
+UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
-extern uint16_t fondo[]; // Fondo de la TFT
+extern uint16_t kitty[]; // Fondo de la TFT
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_SPI1_Init(void);
-static void MX_USART1_UART_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_USART3_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -122,33 +122,34 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_SPI1_Init();
-  MX_USART1_UART_Init();
   MX_USART2_UART_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
 
-  // --- Inicialización de la TFT ---
+  //Inicialización de la TFT
   LCD_Init();
   LCD_Clear(0x00);
+  //FillRect(50,60,20,20,0xF800);
   // Carga el fondo (Si el bitmap es 320x240)
-  LCD_Bitmap(0, 0, 320, 240, fondo);
+  LCD_Bitmap(0, 0, 320, 240, kitty);
 
   // Texto inicial de la interfaz (Tamaño 2)
-  LCD_Print("PROYECTO 3: Lector I2C/TFT", 20, 10, 2, 0xFFFF, 0x0000);
+  //LCD_Print("PROYECTO 3: Lector I2C/TFT", 20, 10, 2, 0xFFFF, 0x0000);
 
   // Texto de instrucción (Tamaño 1)
-  LCD_Print("Presiona el boton para medir", 20, 200, 1, 0xFFFF, 0x4c9d);
+  //LCD_Print("Presiona el boton para medir", 20, 200, 1, 0xFFFF, 0x4c9d);
 
   // Etiqueta de la temperatura (Tamaño 2)
-  LCD_Print("TEMP:", 10, TEMP_Y_POS, 2, 0xFFFF, 0x0000);
+  //LCD_Print("TEMP:", 10, TEMP_Y_POS, 2, 0xFFFF, 0x0000);
   // Muestra un valor inicial (Tamaño 3 para que se vea grande)
-  LCD_Print("--.-- C", TEMP_X_POS, TEMP_Y_POS, 3, 0xFFFF, 0x0000);
+  //LCD_Print("--.-- C", TEMP_X_POS, TEMP_Y_POS, 3, 0xFFFF, 0x0000);
   // --------------------------------
 
   // Mensaje de inicio de debug
-  transmit_uart("Sistema iniciado. Presiona boton para pedir TEMP.\r\n");
+  transmit_uart("Presione el boton para pedir TEMP.\r\n");
 
-  /*Espera los datos del ESP32*/
-   HAL_UART_Receive_IT(&huart1, (uint8_t*)&rx_buffer_esp32[rx_index_esp32], 1);
+  /Espera los datos del ESP32/
+   HAL_UART_Receive_IT(&huart3, (uint8_t*)&rx_buffer_esp32[rx_index_esp32], 1);
 
   /* USER CODE END 2 */
 
@@ -179,9 +180,9 @@ int main(void)
 
           // 5) Mostrar en TFT
           // Borrar el valor anterior (sobreescribiendo con el color de fondo: 0x0000 = negro)
-          LCD_Print("         ", TEMP_X_POS, TEMP_Y_POS, 3, 0x0000, 0x0000);
+          //LCD_Print("         ", TEMP_X_POS, TEMP_Y_POS, 3, 0x0000, 0x0000);
           // Mostrar el nuevo valor (Tamaño 3, color verde: 0x07E0)
-          LCD_Print(temp_str, TEMP_X_POS, TEMP_Y_POS, 3, 0x07E0, 0x0000);
+          //LCD_Print(temp_str, TEMP_X_POS, TEMP_Y_POS, 3, 0x07E0, 0x0000);
 
           // Opcional: Mostrar por debug
           sprintf(temp_str, "Temperatura recibida: %d.%02d C\r\n", entero, decimal);
@@ -287,39 +288,6 @@ static void MX_SPI1_Init(void)
 }
 
 /**
-  * @brief USART1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USART1_UART_Init(void)
-{
-
-  /* USER CODE BEGIN USART1_Init 0 */
-
-  /* USER CODE END USART1_Init 0 */
-
-  /* USER CODE BEGIN USART1_Init 1 */
-
-  /* USER CODE END USART1_Init 1 */
-  huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
-  huart1.Init.WordLength = UART_WORDLENGTH_8B;
-  huart1.Init.StopBits = UART_STOPBITS_1;
-  huart1.Init.Parity = UART_PARITY_NONE;
-  huart1.Init.Mode = UART_MODE_TX_RX;
-  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
-  if (HAL_UART_Init(&huart1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USART1_Init 2 */
-
-  /* USER CODE END USART1_Init 2 */
-
-}
-
-/**
   * @brief USART2 Initialization Function
   * @param None
   * @retval None
@@ -353,6 +321,39 @@ static void MX_USART2_UART_Init(void)
 }
 
 /**
+  * @brief USART3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART3_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART3_Init 0 */
+
+  /* USER CODE END USART3_Init 0 */
+
+  /* USER CODE BEGIN USART3_Init 1 */
+
+  /* USER CODE END USART3_Init 1 */
+  huart3.Instance = USART3;
+  huart3.Init.BaudRate = 115200;
+  huart3.Init.WordLength = UART_WORDLENGTH_8B;
+  huart3.Init.StopBits = UART_STOPBITS_1;
+  huart3.Init.Parity = UART_PARITY_NONE;
+  huart3.Init.Mode = UART_MODE_TX_RX;
+  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART3_Init 2 */
+
+  /* USER CODE END USART3_Init 2 */
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -370,7 +371,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, LCD_RST_Pin|LCD_D1_Pin|SD_SS_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, LCD_RST_Pin|LCD_D1_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, LCD_RD_Pin|LCD_WR_Pin|LCD_RS_Pin|LCD_D7_Pin
@@ -378,10 +379,10 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, LCD_CS_Pin|LCD_D6_Pin|LCD_D3_Pin|LCD_D5_Pin
-                          |LCD_D4_Pin, GPIO_PIN_RESET);
+                          |LCD_D4_Pin|SD_SS_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : LCD_RST_Pin LCD_D1_Pin SD_SS_Pin */
-  GPIO_InitStruct.Pin = LCD_RST_Pin|LCD_D1_Pin|SD_SS_Pin;
+  /*Configure GPIO pins : LCD_RST_Pin LCD_D1_Pin */
+  GPIO_InitStruct.Pin = LCD_RST_Pin|LCD_D1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
@@ -397,24 +398,20 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pins : LCD_CS_Pin LCD_D6_Pin LCD_D3_Pin LCD_D5_Pin
-                           LCD_D4_Pin */
+                           LCD_D4_Pin SD_SS_Pin */
   GPIO_InitStruct.Pin = LCD_CS_Pin|LCD_D6_Pin|LCD_D3_Pin|LCD_D5_Pin
-                          |LCD_D4_Pin;
+                          |LCD_D4_Pin|SD_SS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pins : bot2_Pin bot1_Pin */
-  GPIO_InitStruct.Pin = bot2_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pin = bot2_Pin|bot1_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  GPIO_InitStruct.Pin = bot1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
@@ -430,13 +427,13 @@ static void MX_GPIO_Init(void)
   */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-    if (huart->Instance == USART1)
+    if (huart->Instance == USART3)
     {
         rx_index_esp32++;
 
         if (rx_index_esp32 < 4)
         {
-            HAL_UART_Receive_IT(&huart1, &rx_buffer_esp32[rx_index_esp32], 1);
+            HAL_UART_Receive_IT(&huart3, &rx_buffer_esp32[rx_index_esp32], 1);
         }
         else
         {
@@ -468,10 +465,10 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
         memset(rx_buffer_esp32, 0, 4);
 
         // Enviar 'R'
-        HAL_UART_Transmit(&huart1, &solicitud, 1, 50);
+        HAL_UART_Transmit(&huart3, &solicitud, 1, 50);
 
         // Iniciar recepción
-        HAL_UART_Receive_IT(&huart1, &rx_buffer_esp32[0], 1);
+        HAL_UART_Receive_IT(&huart3, &rx_buffer_esp32[0], 1);
     }
 
     // (si luego agregas el botón 2, aquí va su acción)
@@ -510,5 +507,4 @@ void assert_failed(uint8_t *file, uint32_t line)
      ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
 }
-#endif /* USE_FULL_ASSERT */
-
+#endif /* USE_FULL_ASSERT */
