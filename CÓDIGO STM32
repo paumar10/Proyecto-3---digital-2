@@ -18,8 +18,8 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include <string.h>   // ← PARA strlen, memset
-#include <stdio.h>    // ← PARA sprintf
+#include <string.h>   //memset
+#include <stdio.h>    //sprintf
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
