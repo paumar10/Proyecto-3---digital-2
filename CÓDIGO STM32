@@ -334,6 +334,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
         {
             nuevo_dato = 1;
             esperando_respuesta = 0;
+            HAL_UART_AbortReceive(&huart1);
             // NO volvemos a llamar Receive_IT aquí, porque ya tenemos los 4 bytes.
         }
         else
@@ -358,8 +359,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
             esperando_respuesta = 1;
             memset(rx_buffer_esp32, 0, 4);
 
-            HAL_UART_Transmit(&huart1, &solicitud, 1, 50);
             HAL_UART_Receive_IT(&huart1, &rx_buffer_esp32[0], 1);
+            HAL_UART_Transmit(&huart1, &solicitud, 1, 50);
+
 
             ultimo_bot1 = ahora;
         }
@@ -399,3 +401,4 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
+
